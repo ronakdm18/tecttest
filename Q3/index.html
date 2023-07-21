@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Functional Programming</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+</head>
+
+<body>
+
+</body>
+<script>
+    // Array to store the assets
+    const listAssets = [];
+
+    // Fetch JSON data from the server
+    fetch('jsondata/data.json')
+        .then(response => response.json())
+        .then(data => {
+            // Parse the data starting from the specified packages
+            parse(data, ['bootstrap', 'fliplet-core', 'moment', 'jquery']);
+
+            // Concatenate and filter the assets using Lodash functions
+            const finalResult = _.uniq(_.flatten(listAssets));
+            console.log(finalResult);
+        })
+        .catch(error => console.error('Error fetching JSON:', error));
+
+    // Function to parse the data and extract assets from specified packages and their dependencies
+    function parse(data, packages) {
+        // Find the package data corresponding to the packageName in the data.assets array
+        const packageData = [data.assets].find((item) => item.hasOwnProperty(packageName));
+
+        // If packageData is not found, move on to the next package
+        if (!packageData) {
+            return;
+        }
+
+        // Get the latest version of the package and its version list
+        const packageLatestVersion = packageData[packageName].latestVersion;
+        const packageVersionList = packageData[packageName].versions;
+
+        // If packageVersionList or the latest version is not valid, move on to the next package
+        if (!packageVersionList || !packageVersionList[packageLatestVersion]) {
+            return;
+        }
+
+        // Get the assets corresponding to the latest version of the package and add them to the listAssets array
+        const packageAssets = packageVersionList[packageLatestVersion];
+        listAssets.push(packageAssets);
+
+        // Get the dependencies of the package
+        const packageDependencies = packageData[packageName].dependencies;
+
+        // If there are no dependencies or the dependencies array is empty, move on to the next package
+        if (!packageDependencies || packageDependencies.length === 0) {
+            return;
+        }
+
+        // Recursively call the parse function with the data object and the packageDependencies array
+        // This will handle the dependencies and repeat the process for each dependent package
+        parse(data, packageDependencies);
+    }
+
+
+
+</script>
+
+</html>
