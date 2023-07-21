@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced use of javascript</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  </head>
+  <body>
+
+    <script>
+      sampleData = {
+        apps: [
+          { id: 1, title: 'Lorem', published: true, userId: 123 },
+          { id: 2, title: 'Ipsum', published: false, userId: 123 },
+          { id: 3, title: 'Dolor', published: true, userId: 456 },
+          { id: 4, title: 'Sit', published: true, userId: 789 },
+          { id: 5, title: 'Amet', published: false, userId: 123 },
+          { id: 6, title: 'Et', published: true, userId: 123 }
+        ],
+        organizations: [
+          { id: 1, name: 'Google', suspended: true, userId: 123 },
+          { id: 2, name: 'Apple', suspended: false, userId: 456 },
+          { id: 3, name: 'Fliplet', suspended: false, userId: 123 }
+        ]
+      }
+
+      /* function loadDataFromJSON() {
+        const xhr = new XMLHttpRequest();
+        xhr.overrideMimeType('application/json');
+        xhr.open('GET', 'https://api.npoint.io/ec0e8726db3f626d394a', true);
+        xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+        xhr.setRequestHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        xhr.setRequestHeader('Access-Control-Allow-Headers', 'Content-Type');
+        xhr.onreadystatechange = function() {
+        
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            sd = JSON.parse(xhr.responseText);
+            sampleData = sd;
+          }
+        };
+        xhr.send(null);
+      }
+      loadDataFromJSON(); */
+
+      // @TODO: This is the model/class you should work out
+
+      // User class definition
+      class User {
+        constructor(passedData) {
+          this.data = sampleData;
+          this.id = passedData.id;
+          this.filteredData = this.filterById();
+        }
+
+        // Select a table (apps or organizations) from filteredData
+        select(tableName) {
+          this.table = this.filteredData[tableName];
+          return this;
+        }
+
+        // Specify the attributes to retrieve from the table
+        attributes(attrs) {
+          this.attrs = attrs;
+          return this;
+        }
+
+        // Apply a condition to filter the data in the table
+        where(condition) {
+          this.table = _.filter(this.table, condition);
+          return this;
+        }
+
+        // Sort the data in the table based on keys
+        order(keys) {
+          this.table = _.orderBy(this.table, keys);
+          return this;
+        }
+
+        // Return all rows from the table with specified attributes
+        findAll() {
+          return Promise.resolve(this.table.map(row => _.pick(row, this.attrs)));
+        }
+
+        // Return the first row from the table with specified attributes
+        findOne() {
+          return Promise.resolve(_.pick(this.table[0], this.attrs));
+        }
+
+        // Filter the data based on the provided user ID
+        filterById() {
+          return {
+            ...this.data,
+            apps: _.filter(this.data.apps, { userId: this.id }),
+            organizations: _.filter(this.data.organizations, { userId: this.id })
+          };
+        }
+      }
+
+      // ------------------------------------------
+      // You shouldn't need to edit below this line
+
+      var user = new User({
+        id: 123
+      });
+
+      // Mimic what a ORM-like query engine would do by filtering the
+      // "sampleData" based on the query and the expected result example.
+      // Hint: lodash can be quite handly in dealing with this.
+      user
+        .select('apps')
+        .attributes(['id', 'title'])
+        .where({ published: true })
+        .order(['title'])
+        .findAll()
+        .then(function (apps) {
+          // The expected result is for the "apps" array is:
+          // [ { id: 6, title: 'Et' }, { id: 1, title: 'Lorem' } ]
+          console.log(apps);
+        })
+
+      user
+        .select('organizations')
+        .attributes(['name'])
+        .where({ suspended: false })
+        .findOne()
+        .then(function (organization) {
+          // The expected result is for the "organization" object is:
+          // { id: 3, name: 'Fliplet' }
+          console.log(organization);
+        })
+    </script>
+
+  </body>
+
+</html>
